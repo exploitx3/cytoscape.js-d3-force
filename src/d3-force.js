@@ -267,10 +267,10 @@ class ContinuousLayout {
 
         };
         l.removeCytoscapeEvents = function () {
-          s.nodes.off('grab free drag lock unlock', _cytoscapeEvent);
+          s.nodes.off(' free drag lock unlock', _cytoscapeEvent);
           l.removeCytoscapeEvents = null;
         };
-        s.nodes.on('grab free drag lock unlock', _cytoscapeEvent);
+        s.nodes.on(' free drag lock unlock', _cytoscapeEvent);
       }
       l.ungrabify(s.nodes);
     }
