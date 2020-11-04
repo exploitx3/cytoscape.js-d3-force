@@ -223,19 +223,31 @@ class ContinuousLayout {
       let restartAlphaTarget = Math.abs((s.alpha || 1) - (s.alphaTarget || 0)) / 3;
       if (!l.removeCytoscapeEvents) {
         let _cytoscapeEvent = function(e){
-          let node = this;
-          let pos = node.position();
-          let nodeIsTarget = e.cyTarget === node || e.target === node;
-          if( !nodeIsTarget ){ return; }
-          let _scratch = l.getScratch( node );
+
+          // console.log(e.type)
+
+          var node = this;
+          var pos = node.position();
+          var nodeIsTarget = e.cyTarget === node || e.target === node;
+          if (!nodeIsTarget) {
+            return;
+          }
+          var _scratch = l.getScratch(node);
           s.progress = 0;
           s.iterations = 0;
           s.startTime = Date.now();
           _scratch.x = pos.x;
           _scratch.y = pos.y;
-          if (e.type === 'grab') {
+
+          _scratch.dragCounter = (_scratch.dragCounter ? _scratch.dragCounter : 0) + 1
+          // console.log('c ' + _scratch.dragCounter)
+          if (e.type === 'drag' && _scratch.dragCounter === 1) {
             l.simulation.alphaTarget(restartAlphaTarget).restart();
-          } else if ((e.type === 'unlock' || e.type === 'free')) {
+          } else if(e.type === 'free' && _scratch.dragCounter > 5) {
+
+            _scratch.dragCounter = 0;
+          } else if ((e.type === 'unlock' || e.type === 'free') && _scratch.dragCounter > 1) {
+
             if (!s.fixedAfterDragging) {
               delete _scratch.fx;
               delete _scratch.fy;
@@ -243,11 +255,16 @@ class ContinuousLayout {
               _scratch.fx = pos.x;
               _scratch.fy = pos.y;
             }
+
             l.simulation.alphaTarget(restartAlphaTarget).restart();
+          } else if(e.type === 'free' && _scratch.dragCounter === 1) {
+
+            _scratch.dragCounter = 0;
           } else {
             _scratch.fx = pos.x;
             _scratch.fy = pos.y;
           }
+
         };
         l.removeCytoscapeEvents = function () {
           s.nodes.off('grab free drag lock unlock', _cytoscapeEvent);
